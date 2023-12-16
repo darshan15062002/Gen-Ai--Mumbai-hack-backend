@@ -135,6 +135,14 @@ exports.getAllGeneratedQuizzes = catchAsyncError(async (req, res, next) => {
     Generate ${noQue} multiple-choice questions with four options each based on the provided PDF Text. 
     and fifth option is the possition of correct answers out of four options like 2
     Ensure the questions cover various aspects of the text.
+    and final result must be it must be in format nothing else :
+    What happens when light hits a black hole? ,
+    a). It is absorbed.,
+    b). It is reflected., 
+    c). It is refracted.,
+    d). It is scattered.,
+    4,
+    
     `
 
     client.generateText({
@@ -142,13 +150,13 @@ exports.getAllGeneratedQuizzes = catchAsyncError(async (req, res, next) => {
         prompt: {
             text: prompt,
         },
-        temperature: 0.2,
+
     })
         .then((result) => {
             const generatedText = result[0]?.candidates[0]?.output || "No output available";
 
             // const inputText = generatedText.split(/\s{4,}\d+\.\s/).filter(Boolean);
-            const questions = generatedText.split('\n').filter(Boolean);
+            const questions = generatedText.split(',').filter(Boolean);
 
             const array = [];
             for (let i = 0; i < questions.length; i += 6) {
@@ -160,18 +168,19 @@ exports.getAllGeneratedQuizzes = catchAsyncError(async (req, res, next) => {
                         questions[i + 3],
                         questions[i + 4]
                     ],
-                    correctAnswer: questions[i + 5]?.slice(-1),
+                    correctAnswer: questions[i + 5].slice(-1),
                 };
                 array.push(doc);
             }
             console.log(array);
 
 
-
+            console.log(questions);
 
             res.status(200).json({
                 success: true,
                 array
+                // generatedText
             });
         })
 
