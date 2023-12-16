@@ -10,19 +10,20 @@ const ApiFeatures = require("../utils/apiFeatures.js");
 exports.createUser = catchAsyncError(async (req, res, next) => {
 
 
-    const { name, phone, std, location, password } = req.body
+    const { name, phone, email, password } = req.body
 
     const response = await User.findOne({
         $or: [
             { username: name },   // Replace yourInput with the actual username you are searching for
-            { phone: phone },      // Replace yourInput with the actual phone number you are searching for
+            { phone: phone },
+            { email: email }    // Replace yourInput with the actual phone number you are searching for
         ],
     })
 
 
     if (response) return next(new ErrorHander("User already exist  ", 400));
 
-    const user = await User.create({ name, phone, std, location, password })
+    const user = await User.create({ name, phone, email, password })
     sendToken(user, res, 201, "Registered Successfully");
 })
 
@@ -33,6 +34,7 @@ exports.loginUser = catchAsyncError(async (req, res, next) => {
     const user = await User.findOne({
         $or: [
             { name: email },   // Replace yourInput with the actual username you are searching for
+            { email: email },
             { phone: email },      // Replace yourInput with the actual phone number you are searching for
         ],
     }).select("+password");
@@ -69,8 +71,8 @@ exports.updateProfile = catchAsyncError(async (req, res, next) => {
 
     if (name) user.name = name;
     if (phone) user.phone = phone;
-    if (std) user.std = std;
-    if (location) user.location = location;
+    if (email) user.email = email;
+
 
 
     await user.save();
@@ -86,7 +88,7 @@ exports.getAllUser = catchAsyncError(async (req, res, next) => {
     const pagination = 10
     const userCount = await User.countDocuments()
 
-    const apiFeatures = new ApiFeatures(User.find(), req.query).searchByName().searchByPhone().searchByStd().searchByCity().pagination(pagination)
+    const apiFeatures = new ApiFeatures(User.find(), req.query).searchByName().searchByPhone().searchByStd().pagination(pagination)
     const users = await apiFeatures.query;
     res.status(200).json({
         success: true,

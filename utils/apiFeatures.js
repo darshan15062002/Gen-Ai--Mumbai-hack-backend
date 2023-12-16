@@ -1,4 +1,4 @@
-const catchAsyncError = require("../middleware/catchAsyncError")
+
 
 class ApiFeatures {
     constructor(query, queryStr) {
@@ -17,8 +17,8 @@ class ApiFeatures {
     }
     searchByStd() {
 
-        const keyword = this.queryStr.std ? {
-            std: this.queryStr.std
+        const keyword = this.queryStr.email ? {
+            email: this.queryStr.email
         } : {}
 
         this.query.find({ ...keyword })
@@ -36,16 +36,7 @@ class ApiFeatures {
         this.query.find({ ...keyword })
         return this
     }
-    searchByCity() {
-        const keyword = this.queryStr.city ? {
-            location: {
-                $regex: this.queryStr.city,
-                $options: 'i',
-            },
-        } : {}
-        this.query.find({ ...keyword })
-        return this
-    }
+
 
     pagination(pagination) {
         const currentPage = Number(this.queryStr.page) || 1
