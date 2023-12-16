@@ -152,7 +152,7 @@ exports.getAllGeneratedQuizzes = catchAsyncError(async (req, res, next) => {
                         questions[i + 3],
                         questions[i + 4]
                     ],
-                    correctAnswer: questions[i + 5],
+                    correctAnswer: questions[i + 5]?.slice(-1),
                 };
                 array.push(doc);
             }

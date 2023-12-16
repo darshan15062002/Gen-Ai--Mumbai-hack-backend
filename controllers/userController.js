@@ -67,7 +67,7 @@ exports.getMyProfile = catchAsyncError(async (req, res, next) => {
 
 exports.updateProfile = catchAsyncError(async (req, res, next) => {
     const user = await User.findById(req.user._id);
-    const { name, phone, std, location, } = req.body;
+    const { name, phone, email } = req.body;
 
     if (name) user.name = name;
     if (phone) user.phone = phone;
