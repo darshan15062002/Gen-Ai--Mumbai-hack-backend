@@ -36,10 +36,7 @@ const quizSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    std: {
-        type: Number,
-        required: true,
-    },
+
     endDate: {
         type: Date,
     },
