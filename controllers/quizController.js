@@ -108,7 +108,7 @@ exports.deleteQuiz = catchAsyncError(async (req, res, next) => {
 exports.getAllGeneratedQuizzes = catchAsyncError(async (req, res, next) => {
     const pdfText = req.body.pdf_text;  // Correctly access the PDF text property
     ;
-    const noQue = req.body.noque;
+    const noQue = req.body.noQuiz;
     const MODEL_NAME = "models/text-bison-001";
     const API_KEY = process.env.API_KEY;
 
@@ -125,7 +125,7 @@ exports.getAllGeneratedQuizzes = catchAsyncError(async (req, res, next) => {
 
     const prompt = `
     PDF Text: ${pdfText} 
-    Generate 10 multiple-choice questions with four options each based on the provided PDF Text. 
+    Generate ${noQue} multiple-choice questions with four options each based on the provided PDF Text. 
     and fifth option is the possition of correct answers out of four options like 2
     Ensure the questions cover various aspects of the text.
     `
