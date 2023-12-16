@@ -112,7 +112,7 @@ exports.getAllGeneratedQuizzes = catchAsyncError(async (req, res, next) => {
     const MODEL_NAME = "models/text-bison-001";
     const API_KEY = process.env.API_KEY;
 
-    if (!pdfText || pdfText.length <= 500) {
+    if (!pdfText || pdfText.length <= 1000) {
         return res.status(200).json({
             success: true,
             message: "The provided text is not suitable."
@@ -122,6 +122,13 @@ exports.getAllGeneratedQuizzes = catchAsyncError(async (req, res, next) => {
     const client = new TextServiceClient({
         authClient: new GoogleAuth().fromAPIKey(API_KEY),
     });
+
+    // const prompt = `
+    // PDF Text: ${pdfText} 
+    // Generate ${noQue} multiple-choice questions with four options each based on the provided PDF Text. 
+    // and fifth option is the possition of correct answers out of four options like 2
+    // Ensure the questions cover various aspects of the text.
+    // `
 
     const prompt = `
     PDF Text: ${pdfText} 
@@ -135,6 +142,7 @@ exports.getAllGeneratedQuizzes = catchAsyncError(async (req, res, next) => {
         prompt: {
             text: prompt,
         },
+        temperature: 0.2,
     })
         .then((result) => {
             const generatedText = result[0]?.candidates[0]?.output || "No output available";
