@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const bodyParser = require('body-parser');
 app.use(cors({
-    origin: ['http://localhost:3000', "https://mumbaihack-24.web.app", "https://mumbaihacks-genai.vercel.app/"], // specify the exact origin for requests with credentials
+    origin: ['http://localhost:3000', "https://mumbaihack-24.web.app", "https://mumbaihacks-genai.vercel.app"], // specify the exact origin for requests with credentials
     credentials: true,
 }));
 app.use(bodyParser.json());
