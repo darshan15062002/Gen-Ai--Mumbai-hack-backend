@@ -9,11 +9,7 @@ const ApiFeatures = require("../utils/apiFeatures.js");
 
 exports.createUser = catchAsyncError(async (req, res, next) => {
 
-    // {
-    //     "name":"darshan",
-    //     "email":"darshan@gmail.com",
-    //     "password":"$$dar$$120"
-    // }
+
     const { name, phone, std, location, password } = req.body
 
     const response = await User.findOne({
