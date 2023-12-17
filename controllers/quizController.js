@@ -273,8 +273,9 @@ const generateQuestions = (pdfText, userConcerns, noQue, apiKey, modelName) => {
 exports.getAllPdfGeneratedQuizzes = catchAsyncError(async (req, res) => {
     const pdfBuffer = Buffer.from(req.file?.buffer);
     // const pdfBuffer = req.file?.buffer;
-    const userConcern = req.body.userConcerns
-    const userConcerns = [userConcern, userConcern];
+    const userConcern1 = req.body.userConcerns1
+    const userConcern2 = req.body.userConcerns2
+    const userConcerns = [userConcern1, userConcern2];
     const noQue = req.body.noQuiz;
     const MODEL_NAME = "models/text-bison-001";
     const API_KEY = process.env.API_KEY;
