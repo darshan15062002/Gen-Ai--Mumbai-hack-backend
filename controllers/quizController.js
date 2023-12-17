@@ -2,6 +2,8 @@ const { GoogleAuth } = require("google-auth-library");
 const catchAsyncError = require("../middleware/catchAsyncError");
 const Quiz = require("../model/quizModal");
 const Submission = require("../model/submissionModal");
+const pdfParse = require('pdf-parse');
+const natural = require('natural');
 const { TextServiceClient } =
     require("@google-ai/generativelanguage").v1beta2;
 
@@ -141,7 +143,7 @@ exports.getAllGeneratedQuizzes = catchAsyncError(async (req, res, next) => {
     b). It is reflected., 
     c). It is refracted.,
     d). It is scattered.,
-    4,
+    2,
     
     `
 
@@ -185,3 +187,114 @@ exports.getAllGeneratedQuizzes = catchAsyncError(async (req, res, next) => {
         })
 
 });
+
+
+
+
+// --------------------------------------------------------------------------------------------
+
+const extractRelevantText = (pdfText, userConcerns) => {
+    const relevantSentences = [];
+    const tokenizer = new natural.SentenceTokenizer();
+
+
+    if (!Array.isArray(userConcerns)) {
+        // Handle the case where userConcerns is not an array
+        throw new Error('userConcerns must be an array');
+    }
+
+    // Tokenize the PDF text into sentences
+    const sentences = tokenizer.tokenize(pdfText);
+
+    // Extract sentences containing user concerns
+    for (const sentence of sentences) {
+        if (userConcerns.some(concern => sentence.toLowerCase().includes(concern.toLowerCase()))) {
+            relevantSentences.push(sentence);
+        }
+    }
+
+    // Join relevant sentences into a single text
+    const relevantText = relevantSentences.join(' ');
+
+    return relevantText;
+};
+
+const generateQuestions = (pdfText, userConcerns, noQue, apiKey, modelName) => {
+    const client = new TextServiceClient({
+        authClient: new GoogleAuth().fromAPIKey(apiKey),
+    });
+
+    const relevantText = extractRelevantText(pdfText, userConcerns);
+
+    const prompt = `
+    PDF Text: ${relevantText} 
+    Generate multiple-choice questions with four options each based on the provided PDF Text. 
+    and fifth option is the possition of correct answers out of four options like 2
+    Ensure the questions cover various aspects of the text.
+    and final result must be it must be in format nothing else :
+    What happens when light hits a black hole?,
+    a). It is absorbed.,
+    b). It is reflected., 
+    c). It is refracted.,
+    d). It is scattered.,
+    2,
+    `;
+
+    return client.generateText({
+        model: modelName,
+        prompt: {
+            text: prompt,
+        },
+    })
+        .then((result) => {
+            const generatedText = result[0]?.candidates[0]?.output || "No output available";
+            const questions = generatedText.split(',').filter(Boolean);
+
+            const array = [];
+            for (let i = 0; i < questions.length; i += 6) {
+                let doc = {
+                    text: questions[i],
+                    answers: [
+                        questions[i + 1],
+                        questions[i + 2],
+                        questions[i + 3],
+                        questions[i + 4],
+                    ],
+                    correctAnswer: questions[i + 5]?.slice(-1),
+                };
+                array.push(doc);
+            }
+
+            return array;
+            // return questions
+        });
+};
+
+exports.getAllPdfGeneratedQuizzes = catchAsyncError(async (req, res) => {
+    const pdfBuffer = Buffer.from(req.file?.buffer);
+    // const pdfBuffer = req.file?.buffer;
+    const userConcern = req.body.userConcerns
+    const userConcerns = [userConcern, userConcern];
+    const noQue = req.body.noQuiz;
+    const MODEL_NAME = "models/text-bison-001";
+    const API_KEY = process.env.API_KEY;
+
+    try {
+        const pdfData = await pdfParse(pdfBuffer);
+        const pdfText = pdfData.text;
+
+        const quizQuestions = await generateQuestions(pdfText, userConcerns, noQue, API_KEY, MODEL_NAME);
+
+        res.status(200).json({
+            success: true,
+            array: quizQuestions,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+        });
+    }
+})
+
